@@ -1,0 +1,1 @@
+export { normalizeCategoryName } from './normalize';
