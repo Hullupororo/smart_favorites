@@ -6,9 +6,15 @@ export type SectionsSession = {
 };
 
 export type Session = {
-  ui: { state: UIState; errorMessage?: string };
-  sections?: SectionsSession;
-  locks?: Record<string, boolean>;
+  ui: {
+    state: 'idle' | 'loading' | 'error' | 'success';
+    errorMessage?: string;
+  };
+  sections?: { renameId?: number };
+  forward?: {
+    active: boolean; // режим включён?
+    defaultSectionId?: number; // опционально: сохранять сразу в выбранную секцию
+  };
 };
 
 export type MyContext = Context & { session: Session };

@@ -1,4 +1,3 @@
-// src/db/client.ts
 import 'dotenv/config'; // <— добавь эту строку
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
