@@ -6,8 +6,6 @@ export type SectionsSession = {
 };
 
 export type Session = {
-  preset: Record<string, boolean>;
-  mode: 'preset' | 'custom';
   ui: { state: UIState; errorMessage?: string };
   sections?: SectionsSession;
   locks?: Record<string, boolean>;

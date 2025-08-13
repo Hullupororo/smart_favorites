@@ -1,20 +1,25 @@
-// src/bot/scenes/custom-name.scene.ts
 import {
+  Action,
+  Ctx,
+  On,
   Scene,
   SceneEnter,
   SceneLeave,
-  Ctx,
-  On,
-  Action,
 } from 'nestjs-telegraf';
-import type { MySceneContext } from '../types';
-import { NAME_REGEX } from '../constants';
-import { renderAddOneByOneScreen, renderPresetScreen } from '../utils/render';
+import { NAME_REGEX, SECTIONS_ACTIONS } from '../constants';
 import { CUSTOM_NAME_SCENE } from '../constants/scenes';
-import { CALLBACK_ACTIONS } from '../constants';
+import { ScreenService } from '../services/screen.service';
+import { SectionsService } from '../services/sections.service';
+import type { MySceneContext } from '../types';
+import { renderAddOneByOneScreen } from '../ui/actions/add-section';
 
 @Scene(CUSTOM_NAME_SCENE)
 export class CustomNameScene {
+  constructor(
+    private readonly sectionsService: SectionsService,
+    private readonly ScreenService: ScreenService,
+  ) {}
+
   @SceneEnter()
   async onEnter(@Ctx() ctx: MySceneContext) {
     // Показываем экран «добавлять по одной» сразу
@@ -32,18 +37,18 @@ export class CustomNameScene {
       return;
     }
 
-    ctx.session.preset ??= {};
-    ctx.session.preset[name] = true;
+    const uid = String(ctx.from!.id);
+    await this.sectionsService.createOne(uid, name);
 
     // Перерисовали экран и продолжаем ждать следующий ввод
     await renderAddOneByOneScreen(ctx);
   }
 
   // Выход по кнопке «✅ Готово»
-  @Action(CALLBACK_ACTIONS.ADD_DONE)
+  @Action(SECTIONS_ACTIONS.ADD_DONE)
   async onDone(@Ctx() ctx: MySceneContext) {
     await ctx.answerCbQuery();
-    await renderPresetScreen(ctx, { onlyMarkup: true });
+    await this.ScreenService.showSectionsScreen(ctx);
     await ctx.scene.leave();
   }
 

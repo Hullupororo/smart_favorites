@@ -5,15 +5,13 @@ import { ConfigService } from '@nestjs/config';
 import { InjectBot, TelegrafModule } from 'nestjs-telegraf';
 import type { Telegraf } from 'telegraf';
 import { session } from 'telegraf';
-import { PRESET } from './constants';
 import { CustomNameScene } from './scenes/custom-name.scene';
 import { RenameSectionScene } from './scenes/rename-section.scene';
+import { ScreenService } from './services/screen.service';
 import { SectionsService } from './services/sections.service';
 import { UsersService } from './services/users.service';
 import type { Session } from './types';
 import { HelpUpdate } from './updates/help.update';
-import { PresetUpdate } from './updates/preset.update';
-import { RetryUpdate } from './updates/retry.update';
 import { SectionsUpdate } from './updates/sections.update';
 import { StartUpdate } from './updates/start.update';
 
@@ -29,8 +27,6 @@ import { StartUpdate } from './updates/start.update';
           middlewares: [
             session({
               defaultSession: (): Session => ({
-                mode: 'preset',
-                preset: Object.fromEntries(PRESET.map((p) => [p, true])),
                 ui: { state: 'idle' },
               }),
             }),
@@ -41,14 +37,13 @@ import { StartUpdate } from './updates/start.update';
   ],
   providers: [
     StartUpdate,
-    PresetUpdate,
     HelpUpdate,
     UsersService,
     SectionsService,
-    RetryUpdate,
     SectionsUpdate,
     CustomNameScene,
     RenameSectionScene,
+    ScreenService,
   ],
 })
 export class BotModule implements OnModuleInit {
@@ -58,8 +53,6 @@ export class BotModule implements OnModuleInit {
     await this.bot.telegram.setMyCommands([
       { command: 'start', description: 'Онбординг' },
       { command: 'sections', description: 'Категории: список/управление' },
-      { command: 'search', description: 'Поиск по сохранёнкам' },
-      { command: 'digest', description: 'Настройка дайджестов' },
       { command: 'help', description: 'Как пользоваться' },
     ]);
   }

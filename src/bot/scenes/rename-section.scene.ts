@@ -1,8 +1,9 @@
 import { Scene, SceneEnter, SceneLeave, Ctx, On } from 'nestjs-telegraf';
 import type { MySceneContext } from '../types';
 import { SectionsService } from '../services/sections.service';
-import { renderSectionsScreen, isUniqueViolation } from '../utils';
+import { isUniqueViolation } from '../utils';
 import { RENAME_SECTION_SCENE } from '../constants/scenes';
+import { renderSectionsScreen } from '../ui/sections/render';
 
 @Scene(RENAME_SECTION_SCENE)
 export class RenameSectionScene {
