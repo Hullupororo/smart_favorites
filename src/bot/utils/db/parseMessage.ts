@@ -1,16 +1,28 @@
+// src/bot/utils/parseMessage.ts
 import type { MyContext } from '@/bot/types';
-import { Message } from 'telegraf/types';
-import { isText, isPhoto, isDocument, isVideo } from '../telegram/typeguards';
-import { DraftPayload } from '@/bot/services/draft-store.service';
+import type { Message } from 'telegraf/types';
+import {
+  isDocMsg,
+  isPhotoMsg,
+  isTextMsg,
+  isVideoMsg,
+} from '../telegram/typeguards';
+import type {
+  DraftPayload,
+  LinkPayload,
+  Origin,
+  SingleMediaPayload,
+  TextPayload,
+} from '@/bot/types/payload';
 
 const URL_RE = /(https?:\/\/\S+)/i;
 
 export function parseIncoming(ctx: MyContext): DraftPayload | null {
-  const m = ctx.message as Message | undefined;
+  const m = ctx.message;
   if (!m) return null;
 
   // текст / ссылка
-  if (isText(m)) {
+  if (isTextMsg(m)) {
     const text = m.text.trim();
     const url = text.match(URL_RE)?.[0];
     return {
@@ -18,39 +30,42 @@ export function parseIncoming(ctx: MyContext): DraftPayload | null {
       text,
       url,
       origin: minimalOrigin(m),
-    };
+    } as TextPayload | LinkPayload;
   }
 
   // фото
-  if (isPhoto(m) && m.photo.length) {
+  if (isPhotoMsg(m) && m.photo.length) {
     const photo = m.photo[m.photo.length - 1];
     return {
       kind: 'photo',
       text: m.caption ?? undefined,
-      tgFileId: photo.file_id,
-      tgFileUniqueId: photo.file_unique_id,
+      fileId: photo.file_id,
+      fileUniqueId: photo.file_unique_id,
+      mediaGroupId: m.media_group_id ?? undefined,
       origin: minimalOrigin(m),
-    };
+    } as SingleMediaPayload;
   }
 
   // документ
-  if (isDocument(m)) {
+  if (isDocMsg(m)) {
     return {
       kind: 'document',
       text: m.caption ?? undefined,
-      tgFileId: m.document.file_id,
-      tgFileUniqueId: m.document.file_unique_id,
+      fileId: m.document.file_id,
+      fileUniqueId: m.document.file_unique_id,
+      mediaGroupId: m.media_group_id ?? undefined,
       origin: minimalOrigin(m),
     };
   }
 
   // видео
-  if (isVideo(m)) {
+  if (isVideoMsg(m)) {
     return {
       kind: 'video',
       text: m.caption ?? undefined,
-      tgFileId: m.video.file_id,
-      tgFileUniqueId: m.video.file_unique_id,
+      fileId: m.video.file_id,
+      fileUniqueId: m.video.file_unique_id,
+      mediaGroupId: m.media_group_id ?? undefined,
       origin: minimalOrigin(m),
     };
   }
@@ -59,16 +74,21 @@ export function parseIncoming(ctx: MyContext): DraftPayload | null {
   return { kind: 'other', origin: minimalOrigin(m) };
 }
 
-function minimalOrigin(m: Message) {
-  // эти поля есть у всех message-подтипов
-  const base: any = {
-    chatId: (m as any).chat?.id,
-    messageId: (m as any).message_id,
+function minimalOrigin(m: Message): Origin {
+  const base: Origin = {
+    chatId: m.chat?.id,
+    messageId: m.message_id,
   };
-  // добавим форвард-метаданные, если есть
-  if ('forward_from_chat' in (m as any)) {
-    base.forwardFromChatId = (m as any).forward_from_chat?.id;
-    base.forwardFromMessageId = (m as any).forward_from_message_id;
+
+  //   if ('forward_from_chat' in m) {
+  //     base.forwardFromChatId = m.forward_from_chat?.id;
+  //     base.forwardFromChatUsername = m.forward_from_chat?.username;
+  //     base.forwardFromMessageId = m.forward_from_message_id;
+  //   }
+
+  if ('media_group_id' in m) {
+    base.mediaGroupId = m.media_group_id;
   }
+
   return base;
 }

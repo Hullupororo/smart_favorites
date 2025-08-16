@@ -1,13 +1,5 @@
 import { Injectable } from '@nestjs/common';
-
-export type DraftPayload = {
-  kind: 'text' | 'link' | 'photo' | 'video' | 'document' | 'other';
-  text?: string;
-  url?: string;
-  tgFileId?: string;
-  tgFileUniqueId?: string;
-  origin?: unknown;
-};
+import { DraftPayload } from '../types/payload';
 
 type Entry = { userId: string; payload: DraftPayload; expiresAt: number };
 
