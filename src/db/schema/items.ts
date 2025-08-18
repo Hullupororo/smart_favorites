@@ -7,6 +7,7 @@ import {
   timestamp,
   jsonb,
 } from 'drizzle-orm/pg-core';
+import { MessageEntity } from 'telegraf/types';
 
 export const items = pgTable('items', {
   id: serial('id').primaryKey(),
@@ -15,6 +16,7 @@ export const items = pgTable('items', {
   kind: varchar('kind', { length: 16 }).notNull(), // 'text' | 'link' | 'photo' | 'video' | 'document' | 'album' | 'other'
   text: text('text'),
   url: text('url'),
+  entities: jsonb('entities').$type<MessageEntity[] | undefined>(),
   // --- новое для происхождения/альбомов:
   mediaGroupId: varchar('media_group_id', { length: 64 }),
   originChatId: varchar('origin_chat_id', { length: 64 }),
@@ -31,6 +33,7 @@ export const items = pgTable('items', {
 
 export const itemMedia = pgTable('item_media', {
   id: serial('id').primaryKey(),
+  captionEntities: jsonb('entities').$type<MessageEntity[] | undefined>(),
   itemId: integer('item_id').notNull(), // FK на items.id (можно добавить реальный FK в следующей миграции)
   kind: varchar('kind', { length: 16 }).notNull(), // 'photo' | 'video' | 'document' | ...
   tgFileId: text('tg_file_id').notNull(),

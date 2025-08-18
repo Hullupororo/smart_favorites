@@ -32,35 +32,59 @@ type Renderers = {
 
 function toInputMedia(m: RenderableMediaPart): InputMedia {
   if (m.mediaType === 'photo')
-    return { type: 'photo', media: m.fileId, caption: m.caption };
+    return {
+      type: 'photo',
+      media: m.fileId,
+      caption: m.caption,
+      caption_entities: m.captionEntities,
+    };
   if (m.mediaType === 'video')
-    return { type: 'video', media: m.fileId, caption: m.caption };
-  return { type: 'document', media: m.fileId, caption: m.caption };
+    return {
+      type: 'video',
+      media: m.fileId,
+      caption: m.caption,
+      caption_entities: m.captionEntities,
+    };
+  return {
+    type: 'document',
+    media: m.fileId,
+    caption: m.caption,
+    caption_entities: m.captionEntities,
+  };
 }
 
 const renderers: Renderers = {
   text: async (ctx, item) => {
-    await ctx.reply(item.text, delKb(item.itemId));
+    await ctx.reply(item.text, {
+      ...delKb(item.itemId),
+      entities: item.entities,
+    });
   },
   link: async (ctx, item) => {
     const text = item.text || item.url;
-    await ctx.reply(`${text}\n${item.url}`, delKb(item.itemId));
+    await ctx.reply(`${text}\n${item.url}`, {
+      ...delKb(item.itemId),
+      entities: item.entities,
+    });
   },
   media: async (ctx, item) => {
     const m = item.media;
     if (m.mediaType === 'photo') {
       await ctx.replyWithPhoto(m.fileId, {
         caption: m.caption,
+        caption_entities: m.captionEntities,
         ...delKb(item.itemId),
       });
     } else if (m.mediaType === 'video') {
       await ctx.replyWithVideo(m.fileId, {
         caption: m.caption,
+        caption_entities: m.captionEntities,
         ...delKb(item.itemId),
       });
     } else {
       await ctx.replyWithDocument(m.fileId, {
         caption: m.caption,
+        caption_entities: m.captionEntities,
         ...delKb(item.itemId),
       });
     }

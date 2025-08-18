@@ -1,17 +1,18 @@
 // src/bot/services/content.service.ts
-import { Inject, Injectable } from '@nestjs/common';
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { and, desc, eq, inArray, lt, or } from 'drizzle-orm';
-import { DB } from '@/db/db.module';
-import { items, itemMedia } from '@/db/schema/items';
-import { decodeCursor, encodeCursor } from '@/bot/utils/render/pagination';
 import type {
   ContentPage,
   ListOptions,
   RenderableItem,
-  RenderableMediaPart,
   RenderableMediaKind,
+  RenderableMediaPart,
 } from '@/bot/types/content';
+import { decodeCursor, encodeCursor } from '@/bot/utils/render/pagination';
+import { DB } from '@/db/db.module';
+import { itemMedia, items } from '@/db/schema/items';
+import { Inject, Injectable } from '@nestjs/common';
+import { and, desc, eq, inArray, lt, or } from 'drizzle-orm';
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import { MessageEntity } from 'telegraf/types';
 
 type ItemRow = {
   id: number;
@@ -23,6 +24,7 @@ type ItemRow = {
   mediaGroupId: string | null;
   mediaCount: number;
   createdAt: Date;
+  entities?: MessageEntity[]; // для text/link
 };
 
 type ItemMediaRow = {
@@ -33,6 +35,7 @@ type ItemMediaRow = {
   tgFileUniqueId: string;
   caption: string | null;
   sortOrder: number;
+  captionEntities?: MessageEntity[]; // для caption
 };
 
 @Injectable()
@@ -75,6 +78,7 @@ export class ContentService {
         mediaGroupId: items.mediaGroupId,
         mediaCount: items.mediaCount,
         createdAt: items.createdAt,
+        entities: items.entities,
       })
       .from(items)
       .where(where)
@@ -135,6 +139,7 @@ export class ContentService {
         tgFileUniqueId: itemMedia.tgFileUniqueId,
         caption: itemMedia.caption,
         sortOrder: itemMedia.sortOrder,
+        captionEntities: itemMedia.captionEntities,
       })
       .from(itemMedia)
       .where(inArray(itemMedia.itemId, itemIds))
@@ -157,6 +162,7 @@ export class ContentService {
         fileId: m.tgFileId,
         fileUniqueId: m.tgFileUniqueId,
         caption: m.caption ?? undefined,
+        captionEntities: m.captionEntities,
       };
       return { kind: 'media', itemId: it.id, media: part };
     };
@@ -170,6 +176,7 @@ export class ContentService {
           fileId: m.tgFileId,
           fileUniqueId: m.tgFileUniqueId,
           caption: m.caption ?? undefined,
+          captionEntities: m.captionEntities,
         }));
       return {
         kind: 'album',
@@ -180,12 +187,18 @@ export class ContentService {
     };
 
     const handlers: Record<ItemRow['kind'], () => RenderableItem> = {
-      text: () => ({ kind: 'text', itemId: it.id, text: it.text ?? '' }),
+      text: () => ({
+        kind: 'text',
+        itemId: it.id,
+        text: it.text ?? '',
+        entities: it.entities,
+      }),
       link: () => ({
         kind: 'link',
         itemId: it.id,
         text: it.text ?? it.url ?? '',
         url: it.url ?? '',
+        entities: it.entities,
       }),
       photo: makeSingleMedia,
       video: makeSingleMedia,

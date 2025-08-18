@@ -1,5 +1,7 @@
 // src/bot/types/items.ts
 
+import { MessageEntity } from 'telegraf/types';
+
 /** Метаданные происхождения сообщения/поста. */
 export type Origin = {
   chatId?: number;
@@ -19,6 +21,7 @@ export interface BasePayload {
 export interface TextPayload extends BasePayload {
   kind: 'text';
   text: string;
+  entities?: MessageEntity[];
 }
 
 /** Текст со ссылкой (url уже извлечён). */
@@ -26,6 +29,7 @@ export interface LinkPayload extends BasePayload {
   kind: 'link';
   text: string;
   url: string;
+  entities?: MessageEntity[];
 }
 
 /** Неподдержанный/прочий контент. */
@@ -43,6 +47,7 @@ export interface SingleMediaPayload extends BasePayload {
   fileId: string;
   fileUniqueId: string;
   mediaGroupId?: string; // если часть альбома
+  captionEntities?: MessageEntity[];
 }
 
 /** Элемент альбома. */
@@ -51,6 +56,7 @@ export interface AlbumMediaPart {
   fileId: string;
   fileUniqueId: string;
   caption?: string;
+  captionEntities?: MessageEntity[];
 }
 
 /** Альбом (несколько медиа как один пост). */

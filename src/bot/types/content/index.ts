@@ -1,3 +1,5 @@
+import { MessageEntity } from 'telegraf/types';
+
 // Рендер-тип для UI («как в избранном»)
 export type RenderableMediaKind = 'photo' | 'video' | 'document';
 
@@ -6,6 +8,7 @@ export type RenderableMediaPart = {
   fileId: string;
   fileUniqueId: string;
   caption?: string;
+  captionEntities?: MessageEntity[];
 };
 
 export type ListOptions = {
@@ -40,6 +43,7 @@ export interface TextItem {
   kind: 'text';
   text: string;
   itemId: number;
+  entities?: MessageEntity[];
 }
 
 export interface LinkItem {
@@ -47,6 +51,7 @@ export interface LinkItem {
   text?: string;
   url: string;
   itemId: number;
+  entities?: MessageEntity[];
 }
 
 export type MediaType = 'photo' | 'video' | 'document';
@@ -54,11 +59,13 @@ export type MediaType = 'photo' | 'video' | 'document';
 export interface MediaItem {
   kind: 'media';
   itemId: number;
+  cap?: MessageEntity[];
   media: {
     mediaType: MediaType;
     fileId: string;
     fileUniqueId: string;
     caption?: string;
+    captionEntities?: MessageEntity[];
   };
 }
 
@@ -67,6 +74,7 @@ export interface AlbumItem {
   caption?: string;
   itemId: number;
   media: Array<{
+    captionEntities?: MessageEntity[];
     mediaType: MediaType;
     fileId: string;
     fileUniqueId: string;

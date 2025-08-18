@@ -1,12 +1,5 @@
 // src/bot/utils/parseMessage.ts
 import type { MyContext } from '@/bot/types';
-import type { Message } from 'telegraf/types';
-import {
-  isDocMsg,
-  isPhotoMsg,
-  isTextMsg,
-  isVideoMsg,
-} from '../telegram/typeguards';
 import type {
   DraftPayload,
   LinkPayload,
@@ -14,6 +7,13 @@ import type {
   SingleMediaPayload,
   TextPayload,
 } from '@/bot/types/payload';
+import type { Message } from 'telegraf/types';
+import {
+  isDocMsg,
+  isPhotoMsg,
+  isTextMsg,
+  isVideoMsg,
+} from '../telegram/typeguards';
 
 const URL_RE = /(https?:\/\/\S+)/i;
 
@@ -29,6 +29,7 @@ export function parseIncoming(ctx: MyContext): DraftPayload | null {
       kind: url ? 'link' : 'text',
       text,
       url,
+      entities: m.entities,
       origin: minimalOrigin(m),
     } as TextPayload | LinkPayload;
   }
@@ -43,6 +44,7 @@ export function parseIncoming(ctx: MyContext): DraftPayload | null {
       fileUniqueId: photo.file_unique_id,
       mediaGroupId: m.media_group_id ?? undefined,
       origin: minimalOrigin(m),
+      captionEntities: m.caption_entities,
     } as SingleMediaPayload;
   }
 
@@ -55,6 +57,7 @@ export function parseIncoming(ctx: MyContext): DraftPayload | null {
       fileUniqueId: m.document.file_unique_id,
       mediaGroupId: m.media_group_id ?? undefined,
       origin: minimalOrigin(m),
+      captionEntities: m.caption_entities,
     };
   }
 
@@ -67,6 +70,7 @@ export function parseIncoming(ctx: MyContext): DraftPayload | null {
       fileUniqueId: m.video.file_unique_id,
       mediaGroupId: m.media_group_id ?? undefined,
       origin: minimalOrigin(m),
+      captionEntities: m.caption_entities,
     };
   }
 

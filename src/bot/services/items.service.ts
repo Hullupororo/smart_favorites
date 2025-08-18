@@ -1,14 +1,15 @@
-import { Inject, Injectable } from '@nestjs/common';
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { and, eq, type InferInsertModel } from 'drizzle-orm';
 import { DB } from '@/db/db.module';
-import { items, itemMedia } from '@/db/schema/items';
-import { DraftPayload } from '../types/payload';
+import { itemMedia, items } from '@/db/schema/items';
+import { Inject, Injectable } from '@nestjs/common';
+import { and, eq, type InferInsertModel } from 'drizzle-orm';
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import {
   isLinkPayload,
   isOtherPayload,
   isSingleMediaPayload,
+  isTextPayload,
 } from '../types/guards';
+import { DraftPayload } from '../types/payload';
 
 export class DuplicateItemError extends Error {
   constructor(msg = 'Item already exists') {
@@ -46,6 +47,7 @@ export class ItemsService {
             tgFileId: m.fileId,
             tgFileUniqueId: m.fileUniqueId,
             caption: m.caption,
+            captionEntities: m.captionEntities ?? null,
             sortOrder: idx,
           })),
         );
@@ -64,6 +66,10 @@ export class ItemsService {
       kind: payload.kind,
       text: payload.text,
       url: isLinkPayload(payload) ? payload.url : undefined,
+      entities:
+        isLinkPayload(payload) || isTextPayload(payload)
+          ? payload.entities
+          : null,
       mediaGroupId: isSingleMediaPayload(payload)
         ? payload.mediaGroupId
         : undefined,
@@ -86,6 +92,7 @@ export class ItemsService {
           tgFileUniqueId: payload.fileUniqueId,
           caption: payload.text,
           sortOrder: 0,
+          captionEntities: payload.captionEntities ?? null,
         });
       }
     } catch (e: any) {
