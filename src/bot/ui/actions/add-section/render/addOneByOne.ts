@@ -1,9 +1,14 @@
-import { MyContext } from '@/bot/types';
-import { safeEditText } from '@/bot/utils';
-import { addOneByOneMarkup } from '../markup';
+import type { MySceneContext } from '@/bot/types';
+import { Markup } from 'telegraf';
 
-export async function renderAddOneByOneScreen(ctx: MyContext) {
-  const [text, markup] = addOneByOneMarkup;
+export async function renderAddOneByOneScreen(ctx: MySceneContext) {
+  const text =
+    'Отправляй категории по одной. Когда закончишь — нажми «Готово».';
+  const markup = Markup.inlineKeyboard([
+    [{ text: '✅ Готово', callback_data: 'sections:add:done' }],
+  ]);
 
-  return safeEditText(ctx, text, markup);
+  const message = await ctx.reply(text, markup);
+  ctx.session.ui.addBoxId = message?.message_id;
+  return message;
 }

@@ -1,4 +1,3 @@
-// src/bot/utils/render/state.ts
 import type { MyContext } from '../../types';
 import { safeEditText } from '../telegram';
 

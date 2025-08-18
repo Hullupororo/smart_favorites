@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import type { InferInsertModel } from 'drizzle-orm';
+import { and, eq, type InferInsertModel } from 'drizzle-orm';
 import { DB } from '@/db/db.module';
 import { items, itemMedia } from '@/db/schema/items';
 import { DraftPayload } from '../types/payload';
@@ -92,5 +92,24 @@ export class ItemsService {
       if (e?.code === '23505') throw new DuplicateItemError();
       throw e;
     }
+  }
+
+  async remove(userId: string, itemId: number): Promise<boolean> {
+    return this.db.transaction(async (tx) => {
+      // проверить принадлежность айтема пользователю
+      const [existing] = await tx
+        .select({ id: items.id })
+        .from(items)
+        .where(and(eq(items.id, itemId), eq(items.userId, userId)))
+        .limit(1);
+
+      if (!existing) return false;
+
+      // сначала удалить медиа, затем сам айтем
+      await tx.delete(itemMedia).where(eq(itemMedia.itemId, itemId));
+      await tx.delete(items).where(eq(items.id, itemId));
+
+      return true;
+    });
   }
 }

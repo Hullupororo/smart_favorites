@@ -12,6 +12,7 @@ import { ScreenService } from '../services/screen.service';
 import { SectionsService } from '../services/sections.service';
 import type { MySceneContext } from '../types';
 import { renderAddOneByOneScreen } from '../ui/actions/add-section';
+import { safeDeleteMessage } from '../utils/render/safeDelete';
 
 @Scene(CUSTOM_NAME_SCENE)
 export class CustomNameScene {
@@ -38,7 +39,10 @@ export class CustomNameScene {
     }
 
     const uid = String(ctx.from!.id);
+    const replyMessage = await ctx.reply('Добавляю…');
     await this.sectionsService.createOne(uid, name);
+    await safeDeleteMessage(ctx, replyMessage.message_id);
+    await safeDeleteMessage(ctx, ctx.session.ui.addBoxId);
 
     // Перерисовали экран и продолжаем ждать следующий ввод
     await renderAddOneByOneScreen(ctx);

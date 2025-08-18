@@ -62,7 +62,6 @@ export class SectionsService {
   }
 
   async remove(userId: string, sectionId: number) {
-    // по желанию: запретить удалять isDefault
     await this.db
       .delete(sections)
       .where(and(eq(sections.id, sectionId), eq(sections.userId, userId)));

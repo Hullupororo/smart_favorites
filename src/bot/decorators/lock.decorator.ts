@@ -1,4 +1,3 @@
-// src/bot/decorators/lock.decorator.ts
 import type { MyContext } from '../types';
 
 export function Lock(key?: string) {

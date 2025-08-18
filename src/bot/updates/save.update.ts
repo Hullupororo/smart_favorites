@@ -3,6 +3,7 @@ import { DraftStoreService } from '../services/draft-store.service';
 import { DuplicateItemError, ItemsService } from '../services/items.service';
 import type { MyContext } from '../types';
 import { parseCallbackData } from '../utils';
+import { HandleAwaitCallback } from '../utils/render/withLoadingMessage';
 
 @Update()
 export class SaveItemUpdate {
@@ -11,11 +12,11 @@ export class SaveItemUpdate {
     private readonly items: ItemsService,
   ) {}
 
-  // items:save:<token>:<sectionId>
   @Action(/items:save:([^:]+):(\d+)/)
+  @HandleAwaitCallback({ onSuccess: 'delete' })
   async save(@Ctx() ctx: MyContext) {
     await ctx.answerCbQuery();
-    const parts = parseCallbackData(ctx); // например: ['items','save','<token>','<sectionId>']
+    const parts = parseCallbackData(ctx);
     const token = parts[2];
     const sectionId = Number(parts[3]);
 

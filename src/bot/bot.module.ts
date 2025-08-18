@@ -18,6 +18,9 @@ import { SaveItemUpdate } from './updates/save.update';
 import { SectionsUpdate } from './updates/sections.update';
 import { StartUpdate } from './updates/start.update';
 import { AlbumBufferService } from './services/album-buffer.service';
+import { ContentUpdate } from './updates/content.update';
+import { ContentService } from './services/content.service';
+import { ContentDeleteUpdate } from './updates/content-delete.update';
 
 @Module({
   imports: [
@@ -53,6 +56,9 @@ import { AlbumBufferService } from './services/album-buffer.service';
     IngestUpdate,
     SaveItemUpdate,
     AlbumBufferService,
+    ContentUpdate,
+    ContentService,
+    ContentDeleteUpdate,
   ],
 })
 export class BotModule implements OnModuleInit {

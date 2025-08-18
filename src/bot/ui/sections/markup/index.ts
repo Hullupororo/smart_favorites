@@ -4,7 +4,7 @@ import { SECTIONS_ACTIONS } from '../../../constants';
 
 export const getName = ({ name, id }: { name: string; id: number }) => ({
   text: `📁 ${name}`,
-  callback_data: SECTIONS_ACTIONS.RENAME(id),
+  callback_data: `content:list:${id}`,
 });
 
 export const getRename = (id: number) => ({
